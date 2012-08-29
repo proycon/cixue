@@ -114,9 +114,9 @@ class DB:
                 elif line[:9] == '<example>':
                     mode = 'example'
                 elif line[:12] == '<passivedue>':                    
-                    passivedue = datetime.fromtimestamp(int(line[12:].strip()))
+                    passivedue = datetime.fromtimestamp(float(line[12:].strip()))
                 elif line[:11] == '<activedue>':   
-                    activedue = datetime.fromtimestamp(int(line[11:].strip()))
+                    activedue = datetime.fromtimestamp(float(line[11:].strip()))
                 elif line[:11] == '<StudyInfo>':    
                     pass
                 else:                
