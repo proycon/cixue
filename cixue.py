@@ -187,7 +187,7 @@ class DB:
 def printchoices():
     global CHOICES
     for i, (_, label) in enumerate(CHOICES):
-        print magenta(str(i) + ") " + label + "  "),
+        print magenta(str(i+1) + ") " + label + "  "),
     print
         
 
@@ -253,8 +253,8 @@ if __name__ == "__main__":
             elif c.isdigit():
                 showpinyin = False
                 for j, (t,label) in enumerate(CHOICES):
-                    print "Moving to next stack"
                     if int(c) == j+1:           
+                        print "Moving stack: ", label
                         if mode == Mode.ACTIVE:
                             word.activedue = time.time() + t
                         else:
