@@ -178,7 +178,7 @@ class DB:
             elif self.mode == Mode.ACTIVE and (word.activedue <= t):                
                 pool.append(word)          
             else:          
-                print "skipped " + word.hanzi.encode('utf-8')
+                print "skipped already known word " + word.hanzi.encode('utf-8')
         random.shuffle(pool)
         for word in pool:
             yield word
