@@ -41,13 +41,13 @@ class Mode:
     PASSIVE, ACTIVE = range(2)
     
 class Word:
-    def __init__(self, hanzi, pinyin, meanings, examples, activedue = 0, passivedue = 0):
+    def __init__(self, hanzi, pinyin, meanings, activedue = 0, passivedue = 0):
         self.hanzi = hanzi
         self.pinyin = pinyin        
         self.meanings = meanings #[Meaning]
         
-        self.passivedue = 0
-        self.activedue = 0
+        self.passivedue = passivedue
+        self.activedue = activedue
         
     def front(self, dopinyin=True):
         print "----------------------------------------------------------------------------------------"
@@ -114,9 +114,9 @@ class DB:
                 elif line[:9] == '<example>':
                     mode = 'example'
                 elif line[:12] == '<passivedue>':                    
-                    passivedue = datetime.fromtimestamp(float(line[12:].strip()))
+                    passivedue = float(line[12:].strip())
                 elif line[:11] == '<activedue>':   
-                    activedue = datetime.fromtimestamp(float(line[11:].strip()))
+                    activedue = float(line[11:].strip())
                 elif line[:11] == '<StudyInfo>':    
                     pass
                 else:                
@@ -173,10 +173,12 @@ class DB:
         pool = []
         t = time.time()
         for word in self.words:
-            if self.mode == Mode.PASSIVE and (word.passivedue >= t or not word.passivedue):
+            if self.mode == Mode.PASSIVE and (word.passivedue <= t):
                 pool.append(word)
-            elif self.mode == Mode.ACTIVE and (word.activedue >= t or not word.activedue):                
-                pool.append(word)                    
+            elif self.mode == Mode.ACTIVE and (word.activedue <= t):                
+                pool.append(word)          
+            else:          
+                print "skipped " + word.hanzi.encode('utf-8')
         random.shuffle(pool)
         for word in pool:
             yield word
@@ -231,12 +233,11 @@ if __name__ == "__main__":
                 showpinyin = not showpinyin
                 if showpinyin:
                     print "Showing pinyin"
-                    side = 0
                     word.front(showpinyin)
                 else:
                     print "Hiding pinyin"
-                    side = 0
                     word.front(showpinyin)
+                side = 1
             elif c == 'h':                    
                 print "ENTER - Flip card"
                 print "p - Show/hide pinyin"
@@ -247,8 +248,10 @@ if __name__ == "__main__":
                 db.save()
                 sys.exit(0)
             elif c == 'n':
+                showpinyin = False
                 done = True                
             elif c.isdigit():
+                showpinyin = False
                 for j, (t,label) in enumerate(CHOICES):
                     print "Moving to next stack"
                     if int(c) == j+1:           
