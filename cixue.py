@@ -207,7 +207,7 @@ if __name__ == "__main__":
     quit = False
     for i, word in enumerate(words):
         print blue("====================================================")
-        print "Word " + str(i+1) + " of " + str(len(words)) + ":"
+        print blue("Word " + str(i+1) + " of " + str(len(words)) + ":")
         if mode == Mode.ACTIVE:
             side = 0
             word.back()
