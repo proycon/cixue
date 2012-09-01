@@ -377,6 +377,11 @@ if __name__ == "__main__":
                     word.back()
             elif c == 'x':
                 word.showexamples()
+            elif c == 'l':
+                random.shuffle(words)
+                for w in words:
+                    if w.hanzi in cedict: 
+                        print green(w.hanzi) + "\t" + yellow(cedict[w.hanzi][0]) + "\t" + ";".join(cedict[w.hanzi][1])
             elif c == 'p':
                 showpinyin = not showpinyin
                 if showpinyin:
@@ -390,6 +395,7 @@ if __name__ == "__main__":
                 print "ENTER - Flip card"
                 print "p - Show/hide pinyin"
                 print "d - Dictionary lookup of individual hanzi in the word"
+                print "l - list all remaining words" 
                 print "n - Next (no further action)"
                 print "x - Show examples"
                 print "q - Save and quit"
