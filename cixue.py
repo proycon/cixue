@@ -377,7 +377,13 @@ if __name__ == "__main__":
                     word.back()
             elif c == 'x':
                 word.showexamples()
-            elif c == 'l':
+            elif c == 'z':
+                random.shuffle(words)
+                for w in words:
+                    if w.hanzi in cedict: 
+                        print w.hanzi + "   ",
+                print
+            elif c == 'l' or c == 'ls':
                 random.shuffle(words)
                 for w in words:
                     if w.hanzi in cedict: 
@@ -428,9 +434,9 @@ if __name__ == "__main__":
             if quit:
                 break
     
+
 print "All done!"
-    
-               
+db.save()               
          
     
     
