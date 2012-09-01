@@ -13,7 +13,6 @@ import sys
 import time
 import codecs
 import random
-from datetime import datetime
 import os
 
 CHOICES = ((5*60, '5 minutes'), (3600, 'one hour'), (24*3600, 'one day'),(7*24*3600,'seven days'),(31*24*3600, 'one month'), (365*24*3600,'one year'))
