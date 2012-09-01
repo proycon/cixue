@@ -14,6 +14,7 @@ import time
 import codecs
 import random
 from datetime import datetime
+import os
 
 CHOICES = ((5*60, '5 minutes'), (3600, 'one hour'), (24*3600, 'one day'),(7*24*3600,'seven days'),(31*24*3600, 'one month'), (365*24*3600,'one year'))
  
@@ -191,6 +192,149 @@ def printchoices():
     print
         
 
+#this function makes the pinyin nicer, it strips the tone numbers and instead inserts proper diacritic marks (unicode). It converts for example "zhong1" into "zhōng". I go by the following rules (source: wikipedia):
+# 	 The rules for determining on which vowel the tone mark appears when there are multiple vowels are as follows:
+# 		  1. First, look for an "a" or an "e". If either vowel appears, it takes the tone mark. There are no possible pinyin syllables that contain both an "a" and an "e".
+#   		  2. If there is no "a" or "e", look for an "ou". If "ou" appears, then the "o" takes the tone mark.
+#   		  3. If none of the above cases hold, then the last vowel in the syllable takes the tone mark.
+def pinyin_diacritics(pinyin):
+    if ' ' in pinyin:
+        return "".join(  [ pinyin_diacritics(x.strip()) for x in pinyin.split(' ') if x.strip() ] )
+    
+    pinyin = pinyin.lower();
+    pinyin = pinyin.replace('u:',u"ü")
+    
+    if pinyin[-1].isdigit():
+        tone = int(pinyin[-1])
+        pinyin = pinyin[:-1]
+        if tone == 5: #toneless tone, no diacritic, nothing to do
+            return pinyin
+    else:      
+        #no tone, nothing to do
+        return pinyin
+
+
+    #set diacritic
+    if pinyin.find('a') != -1:
+        if tone == 1:
+            return pinyin.replace('a',u"ā")
+        elif tone == 2:
+            return pinyin.replace('a',u"á")
+        elif tone == 3:
+            return pinyin.replace('a',u"ǎ")
+        elif tone == 4:
+            return pinyin.replace('a',u"à")
+    elif pinyin.find('e') != -1:
+        if tone == 1:
+            return pinyin.replace('e',u"ē")
+        elif tone == 2:
+            return pinyin.replace('e',u"é")
+        elif tone == 3:
+            return pinyin.replace('e',u"ě")
+        elif tone == 4:
+            return pinyin.replace('e',u"è")
+    elif pinyin.find('ou') != -1:
+        if tone == 1:
+            return pinyin.replace('ou',u"ōu")
+        elif tone == 2:
+            return pinyin.replace('ou',u"óu")
+        elif tone == 3:
+            return pinyin.replace('ou',u"ǒu")
+        elif tone == 4:
+            return pinyin.replace('ou',u"òu")
+    else:
+        #grab the last vowel and change it
+        for i, c in enumerate(reversed(pinyin)):
+            pre = pinyin[:-i-1]
+            if -i < 0:
+                post = pinyin[-i:]
+            else:
+                post = ""
+            if c == 'a':
+                if tone == 1: return pre + u"ā" + post
+                elif tone == 2: return pre + u"á" + post
+                elif tone == 3: return pre + u"ǎ" + post
+                elif tone == 4: return pre + u"à" + post
+            elif c == 'e':
+                if tone == 1: return pre + u"ē" + post
+                elif tone == 2: return pre + u"é" + post
+                elif tone == 3: return pre + u"ě" + post
+                elif tone == 4: return pre + u"è" + post
+            elif c == 'u':
+                if tone == 1: return pre + u"ū" + post
+                elif tone == 2: return pre + u"ú" + post
+                elif tone == 3: return pre + u"ǔ" + post
+                elif tone == 4: return pre + u"ù" + post
+            elif c == 'o':
+                if tone == 1: return pre + u"ō" + post
+                elif tone == 2: return pre + u"ó" + post
+                elif tone == 3: return pre + u"ǒ" + post
+                elif tone == 4: return pre + u"ò" + post
+            elif c == 'i':
+                if tone == 1: return pre + u"ī" + post
+                elif tone == 2: return pre + u"í" + post
+                elif tone == 3: return pre + u"ǐ" + post
+                elif tone == 4: return pre + u"ì" + post
+            elif c == u'ü':
+                if tone == 1: return pre + u"ǖ" + post
+                elif tone == 2: return pre + u"ǘ" + post
+                elif tone == 3: return pre + u"ǚ" + post
+                elif tone == 4: return pre + u"ǜ" + post
+        return pinyin #nothing found
+
+
+class Cedict(object):
+    
+    def __init__(self,filename):
+        self.dict = {}
+        self.initials = {}
+        self.finals = {}
+        f = codecs.open(filename,'r','utf-8')
+        for line in f:        
+            if line[0] != '#':
+                zht,zhs,other = line.split(' ',2)
+                assert other[0] == '['
+                end = other.find(']')
+                pinyin = pinyin_diacritics(other[1:end])
+                translations = [ x.strip() for x in other[end+1:].split('/') if x.strip() ]
+                self.dict[zhs] = (pinyin, translations) 
+                                                            
+                if zhs != zht:
+                    self.dict[zht] = (pinyin, translations)
+                    #add traditional chinese if different from simplified
+                    
+                if len(zhs) == 2:                    
+                    if not zhs[0] in self.initials:
+                        self.initials[zhs[0]] = []    
+                    self.initials[zhs[0]].append(zhs)
+                                    
+                    if not zhs[-1] in self.finals:
+                        self.finals[zhs[-1]] = []    
+                    self.finals[zhs[-1]].append(zhs)
+                    
+        f.close()
+       
+    def __getitem__(self, key):
+        return self.dict[key]
+    
+    def __contains__(self, key):
+        return key in self.dict
+    
+    def lookup(self, key):
+        if key in self:
+            pinyin, translations = self[key]
+            print green(key) + "\t" + yellow(pinyin) + "\t" + ";".join(translations) 
+        if key in self.initials:
+            print "Initial:"
+            for initial in self.initials[key]:
+                print green(initial) + "\t" + yellow(self[initial][0]) + "\t" + ";".join(self[initial][1])
+        if key in self.finals:
+            print "Trailing:"
+            for final in self.finals[key]:
+                print green(final) + "\t" + yellow(self[final][0]) + "\t" + ";".join(self[final][1])
+            
+    
+    
 if __name__ == "__main__":        
     mode = Mode.PASSIVE
     try:
@@ -201,6 +345,10 @@ if __name__ == "__main__":
         pass
                     
     db = DB(sys.argv[1], mode)
+    if os.path.exists('cedict_ts.u8'):
+        cedict = Cedict('cedict_ts.u8')
+    else:
+        cedict = None
     side = 0
     words = list(iter(db))
     showpinyin = False
@@ -241,6 +389,7 @@ if __name__ == "__main__":
             elif c == 'h':                    
                 print "ENTER - Flip card"
                 print "p - Show/hide pinyin"
+                print "d - Dictionary lookup of individual hanzi in the word"
                 print "n - Next (no further action)"
                 print "x - Show examples"
                 print "q - Save and quit"
@@ -249,7 +398,14 @@ if __name__ == "__main__":
                 sys.exit(0)
             elif c == 'n':
                 showpinyin = False
-                done = True                
+                done = True        
+            elif c == 'd':        
+                if cedict:
+                    if word.hanzi in cedict and len(word.hanzi) > 1:
+                        print green(word.hanzi) + "\t" + yellow(cedict[word.hanzi][0]) + "\t" + ";".join(cedict[word.hanzi][1])
+                    for i, hanzi in enumerate(word.hanzi): 
+                        print str(i+1) + ")"
+                        cedict.lookup(hanzi)
             elif c.isdigit():
                 showpinyin = False
                 for j, (t,label) in enumerate(CHOICES):
