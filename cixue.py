@@ -15,7 +15,7 @@ import codecs
 import random
 import os
 
-CHOICES = ((5*60, '5 minutes'), (3600, 'one hour'), (24*3600, 'one day'),(7*24*3600,'seven days'),(31*24*3600, 'one month'), (365*24*3600,'one year'))
+CHOICES = ((5*60, '5 minutes'), (3600, 'one hour'), (24*3600, 'one day'),(3*24*3600, 'three days'), (7*24*3600,'one week'),(31*24*3600, 'one month'), (365*24*3600,'one year'))
  
 def magenta(s):
     CSI="\x1B["
