@@ -353,9 +353,9 @@ if __name__ == "__main__":
     side = 0
     words = list(iter(db))
     if mode == Mode.ACTIVE:
-        showpinyin = False
-    else:
         showpinyin = True
+    else:
+        showpinyin = False
     quit = False
     for i, word in enumerate(words):
         print blue("====================================================")
