@@ -184,6 +184,11 @@ class DB:
         random.shuffle(pool)
         for word in pool:
             yield word
+    
+    def all(self):
+        for word in self.words:
+            yield word
+    
         
 
 def printchoices():
@@ -392,6 +397,10 @@ if __name__ == "__main__":
                 for w in words:
                     if w.hanzi in cedict: 
                         print green(w.hanzi) + "\t" + yellow(cedict[w.hanzi][0]) + "\t" + ";".join(cedict[w.hanzi][1])
+            elif c == 'a':
+                for w in db.all():
+                    if w.hanzi in cedict: 
+                        print green(w.hanzi) + "\t" + yellow(cedict[w.hanzi][0]) + "\t" + ";".join(cedict[w.hanzi][1])                    
             elif c == 'p':
                 showpinyin = not showpinyin
                 if showpinyin:
@@ -405,6 +414,7 @@ if __name__ == "__main__":
                 print "ENTER - Flip card"
                 print "p - Show/hide pinyin"
                 print "d - Dictionary lookup of individual hanzi in the word"
+                print "a - list all words in the database"
                 print "l - list all remaining words" 
                 print "n - Next (no further action)"
                 print "x - Show examples"
