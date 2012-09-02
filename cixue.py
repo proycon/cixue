@@ -438,7 +438,7 @@ if __name__ == "__main__":
                         break
             else:
                 inp = unicode(c, 'utf-8')
-                if mode == Mode.ACTIVE and (len(inp) > 2 or (len(inp) == 1 and ord(inp[0]) > 128) ): 
+                if mode == Mode.ACTIVE and (len(inp) >= 2 or (len(inp) == 1 and ord(inp[0]) > 128) ): 
                    if inp == word.hanzi:
                         print >>sys.stderr, green("Correct!")
                         word.front(True)
@@ -452,7 +452,7 @@ if __name__ == "__main__":
                             print >>sys.stderr, yellow("Incorrect, but partial match")
                         else:                            
                             print >>sys.stderr, red("Incorrect")
-                elif mode == Mode.PASSIVE and (len(inp) > 2):
+                elif mode == Mode.PASSIVE and (len(inp) >= 2):
                     correct = False
                     for m in word.meanings:
                         if inp.lower() == m.text.lower():
