@@ -35,7 +35,9 @@ def blue(s):
     CSI="\x1B["
     return CSI+"34m" + s + CSI + "0m"   
 
-
+def red(s):
+    CSI="\x1B["
+    return CSI+"31m" + s + CSI + "0m"
 
 class Mode:
     PASSIVE, ACTIVE = range(2)
@@ -350,7 +352,10 @@ if __name__ == "__main__":
         cedict = None
     side = 0
     words = list(iter(db))
-    showpinyin = False
+    if mode == mode.ACTIVE:
+        showpinyin = False
+    else:
+        showpinyin = True
     quit = False
     for i, word in enumerate(words):
         print blue("====================================================")
@@ -408,7 +413,10 @@ if __name__ == "__main__":
                 db.save()
                 sys.exit(0)
             elif c == 'n':
-                showpinyin = False
+                if mode == Mode.PASSIVE: 
+                    showpinyin = False
+                else:
+                    showpinyin = True
                 done = True        
             elif c == 'd':        
                 if cedict:
@@ -429,7 +437,34 @@ if __name__ == "__main__":
                         done = True
                         break
             else:
-                print >>sys.stderr, "Invalid command (type 'h' for help)" 
+                if mode == Mode.ACTIVE and (len(c) > 2 or ord(c) > 128): 
+                   if c == word.hanzi:
+                        print >>sys.stderr, green("Correct!")
+                        word.front(True)
+                        side = 1
+                   else:
+                        partial = False
+                        for c2 in word.hanzi:
+                            if c2 in c: 
+                                partial = True
+                        if partial:    
+                            print >>sys.stderr, yellow("Incorrect, but partial match")
+                        else:                            
+                            print >>sys.stderr, red("Incorrect")
+                elif mode == Mode.PASSIVE and (len(c) > 2):
+                    correct = False
+                    for m in word.meanings:
+                        if c.lower() == m.text.lower():
+                            correct = True
+                    if correct:
+                        print >>sys.stderr, green("Correct!")
+                        word.front(True)
+                        word.back()
+                        side = 0
+                    else:
+                        print >>sys.stderr, red("Incorrect")                        
+                else:
+                    print >>sys.stderr, "Invalid command (type 'h' for help)" 
             if quit:
                 break
     
