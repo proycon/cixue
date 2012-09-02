@@ -352,7 +352,7 @@ if __name__ == "__main__":
         cedict = None
     side = 0
     words = list(iter(db))
-    if mode == mode.ACTIVE:
+    if mode == Mode.ACTIVE:
         showpinyin = False
     else:
         showpinyin = True
@@ -437,24 +437,25 @@ if __name__ == "__main__":
                         done = True
                         break
             else:
-                if mode == Mode.ACTIVE and (len(c) > 2 or ord(c) > 128): 
-                   if c == word.hanzi:
+                inp = unicode(c, 'utf-8')
+                if mode == Mode.ACTIVE and (len(inp) > 2 or (len(inp) == 1 and ord(inp[0]) > 128) ): 
+                   if inp == word.hanzi:
                         print >>sys.stderr, green("Correct!")
                         word.front(True)
                         side = 1
                    else:
                         partial = False
                         for c2 in word.hanzi:
-                            if c2 in c: 
+                            if c2 in inp: 
                                 partial = True
                         if partial:    
                             print >>sys.stderr, yellow("Incorrect, but partial match")
                         else:                            
                             print >>sys.stderr, red("Incorrect")
-                elif mode == Mode.PASSIVE and (len(c) > 2):
+                elif mode == Mode.PASSIVE and (len(inp) > 2):
                     correct = False
                     for m in word.meanings:
-                        if c.lower() == m.text.lower():
+                        if inp.lower() == m.text.lower():
                             correct = True
                     if correct:
                         print >>sys.stderr, green("Correct!")
